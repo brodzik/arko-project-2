@@ -17,55 +17,54 @@ lissajous:
     sub rsp, 8
     
     ; width to double
-    cvtsi2sd xmm10, edx
+    cvtsi2sd xmm0, edx
 
     ; height to double
-    cvtsi2sd xmm11, r8d
+    cvtsi2sd xmm1, r8d
 
     ; time = 0
-    pxor xmm9, xmm9
+    pxor xmm2, xmm2
 
 loop:
 
     ; a * t + delta
-    movsd xmm0, qword [rbp + 104]
-    mulsd xmm0, xmm9
-    addsd xmm0, qword [rbp + 56]
+    movsd xmm3, qword [rbp + 104]
+    mulsd xmm3, xmm2
+    addsd xmm3, qword [rbp + 56]
 
     ; sin(a * t + delta)
-    movsd [rbp - 8], xmm0
+    movsd [rbp - 8], xmm3
 	fld qword [rbp - 8]
 	fsin
 	fstp qword [rbp - 8]
-	movsd xmm0, [rbp - 8]
+	movsd xmm3, [rbp - 8]
 
     ; x = (sin(a * t + delta) + 1) * width * 0.5
-    movapd xmm15, xmm0
-    addsd xmm15, [one]
-    mulsd xmm15, xmm10
-    mulsd xmm15, [half]
+    addsd xmm3, [one]
+    mulsd xmm3, xmm0
+    mulsd xmm3, [half]
 
     ; x to int
-    cvttsd2si ebx, xmm15
+    cvttsd2si ebx, xmm3
 
     ; b * t
-    movsd xmm0, qword [rbp + 48]
-    mulsd xmm0, xmm9
+    movsd xmm3, qword [rbp + 48]
+    mulsd xmm3, xmm2
     
     ; sin(b * t)
-    movsd [rbp - 8], xmm0
+    movsd [rbp - 8], xmm3
 	fld qword [rbp - 8]
 	fsin
 	fstp qword [rbp - 8]
-	movsd xmm0, [rbp - 8]
+	movsd xmm3, [rbp - 8]
 
     ; y = (sin(b * t) + 1) * height * 0.5
-    addsd xmm0, [one]
-    mulsd xmm0, xmm11
-    mulsd xmm0, [half]
+    addsd xmm3, [one]
+    mulsd xmm3, xmm1
+    mulsd xmm3, [half]
 
     ; y to int
-    cvttsd2si eax, xmm0
+    cvttsd2si eax, xmm3
 
     ; y * width + x
     imul eax, edx
@@ -75,8 +74,8 @@ loop:
     mov byte [rcx + rax], 1
 
     ; increment time, check end condition, loop
-    addsd xmm9, [time_step]
-    comisd xmm9, [two_pi]
+    addsd xmm2, [time_step]
+    comisd xmm2, [two_pi]
     jb loop
 
 end:
