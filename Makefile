@@ -8,9 +8,9 @@ all: $(BUILD_DIR)/main.o $(BUILD_DIR)/lissajous.o
 	mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $(BUILD_DIR)/app $(BUILD_DIR)/main.o $(BUILD_DIR)/lissajous.o $(SDLFLAGS)
 
-$(BUILD_DIR)/lissajous.o: $(SRC_DIR)/lissajous.asm
+$(BUILD_DIR)/lissajous.o: $(SRC_DIR)/lissajous.s
 	mkdir -p $(BUILD_DIR)
-	nasm -f elf64 -o $(BUILD_DIR)/lissajous.o $(SRC_DIR)/lissajous.asm
+	nasm -f elf64 -o $(BUILD_DIR)/lissajous.o $(SRC_DIR)/lissajous.s
 
 $(BUILD_DIR)/main.o: $(SRC_DIR)/main.c
 	mkdir -p $(BUILD_DIR)
