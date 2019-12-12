@@ -8,72 +8,83 @@
     global lissajous
 
 lissajous:
-    ;push rbp
-    ;mov rbp, rsp
+
+    ; prologue
+    push rbp
+    mov rbp, rsp
+
+    ; allocate local variables
+    sub rsp, 8
     
-    push rsi
-    push rbx
-    sub rsp, 200
+    ; width to double
+    cvtsi2sd xmm10, edx
 
-    mov rsi, rcx
-    mov ebx, edx
+    ; height to double
+    cvtsi2sd xmm11, r8d
 
+    ; time = 0
     pxor xmm9, xmm9
-    pxor xmm10, xmm10
-    cvtsi2sd xmm10, r8d
-    pxor xmm11, xmm11
-    cvtsi2sd xmm11, edx
-    movsd xmm12, qword [rsp+108H]
-    movsd xmm13, qword [rsp+100H]
-    movapd xmm14, xmm3
 
 loop:
-    movapd xmm0, xmm14
+
+    ; a * t + delta
+    movsd xmm0, qword [rbp + 104]
     mulsd xmm0, xmm9
-    addsd xmm0, xmm12
+    addsd xmm0, qword [rbp + 56]
 
-    ;call sin
-    movsd [rsp - 64], xmm0
-	fld qword [rsp - 64]
+    ; sin(a * t + delta)
+    movsd [rbp - 8], xmm0
+	fld qword [rbp - 8]
 	fsin
-	fstp qword [rsp - 64]
-	movsd xmm0, [rsp - 64]
+	fstp qword [rbp - 8]
+	movsd xmm0, [rbp - 8]
 
+    ; x = (sin(a * t + delta) + 1) * width * 0.5
     movapd xmm15, xmm0
     addsd xmm15, [one]
-    mulsd xmm15, xmm11
+    mulsd xmm15, xmm10
     mulsd xmm15, [half]
 
-    movapd xmm0, xmm13
+    ; x to int
+    cvttsd2si ebx, xmm15
+
+    ; b * t
+    movsd xmm0, qword [rbp + 48]
     mulsd xmm0, xmm9
     
-    ;call sin
-    movsd [rsp - 64], xmm0
-	fld qword [rsp - 64]
+    ; sin(b * t)
+    movsd [rbp - 8], xmm0
+	fld qword [rbp - 8]
 	fsin
-	fstp qword [rsp - 64]
-	movsd xmm0, [rsp - 64]
+	fstp qword [rbp - 8]
+	movsd xmm0, [rbp - 8]
 
+    ; y = (sin(b * t) + 1) * height * 0.5
     addsd xmm0, [one]
-    mulsd xmm0, xmm10
+    mulsd xmm0, xmm11
     mulsd xmm0, [half]
 
-    cvttsd2si edx, xmm15
+    ; y to int
     cvttsd2si eax, xmm0
 
-    imul eax, ebx
-    add eax, edx
-    mov byte [rsi + rax], 1
+    ; y * width + x
+    imul eax, edx
+    add eax, ebx
 
+    ; set pixel
+    mov byte [rcx + rax], 1
+
+    ; increment time, check end condition, loop
     addsd xmm9, [time_step]
     comisd xmm9, [two_pi]
     jb loop
+
 end:
 
-    add rsp, 200
-    pop rbx
-    pop rsi
+    ; deallocate local variables
+    add rsp, 8
 
-    ;mov rsp, rbp
-    ;pop rbp
+    ; epilogue
+    mov rsp, rbp
+    pop rbp
     ret
