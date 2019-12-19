@@ -8,6 +8,9 @@ Lissajous curve implementation in x86 assembly
     <img src="img/img3.png" width="32%" />
 </p>
 
+## Prerequisites
+User interface implemented using [Simple DirectMedia Layer](https://www.libsdl.org/). Application compiled with [MinGW](http://www.mingw.org/) and tested on Windows 10. <b>Warning:</b> `Makefile` is configured for Windows only. Manual reconfiguration may be required for your machine.
+
 ## References
 - Wikipedia Contributors. "Lissajous curve." <i>Wikipedia</i>. 2019. [[link]](https://en.wikipedia.org/wiki/Lissajous_curve)
 - Félix Cloutier. "x86 and amd64 instruction reference." 2019. [[link]](https://www.felixcloutier.com/x86/index.html)
